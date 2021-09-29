@@ -1,4 +1,4 @@
 ---
 BUNDLE_BIN: "bin"
-BUNDLE_WITHOUT: "development"
+BUNDLE_WITHOUT: "development:test"
 BUNDLE_WITH: "production"
