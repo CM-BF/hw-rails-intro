@@ -8,26 +8,47 @@ class MoviesController < ApplicationController
   
     def index
       @all_ratings = Movie.all_ratings
-      
-      if !params.has_key?(:ratings)
-        ratings_hash = @all_ratings.each_with_object({}) {|rating, h| h[rating] = '1'}
-        params[:ratings] = ratings_hash
-        # redirect_to movies_path(:ratings => ratings_hash) and return
+
+      if !params.has_key?(:ratings) || !params.has_key?(:table_sort)
+        if !params.has_key?(:ratings)
+          if !session.has_key?(:ratings)
+            ratings_hash = @all_ratings.each_with_object({}) {|rating, h| h[rating] = '1'}
+            session[:ratings] = ratings_hash
+          end
+          params[:ratings] = session[:ratings]
+        end
+        if !params.has_key?(:table_sort)
+          if !session.has_key?(:table_sort)
+            session[:table_sort] = "no_sort"
+          end
+          params[:table_sort] = session[:table_sort]
+        end
+        flash.keep
+        redirect_to movies_path(:ratings => params[:ratings], :table_sort => params[:table_sort]) and return
       end
+      
+      session[:ratings] = params[:ratings]
+      session[:table_sort] = params[:table_sort]
       
       @checked_boxes = params[:ratings].keys
       @title_style = ""
       @date_style = ""
-      if params[:title_sort]
-        @movies = Movie.order(:title)
+      @movies = Movie.all
+      
+      case params[:table_sort]
+      when "title_sort"
+        # logger.debug "here title"
+        @movies = @movies.order(:title)
         @title_style = "hilite p-3 mb-2 bg-warning"
-      elsif params[:date_sort]
+      when "date_sort"
         @movies = Movie.order(:release_date)
         @date_style = "hilite p-3 mb-2 bg-warning"
       else
-        # @movies = Movie.all
-        @movies = Movie.with_ratings(@checked_boxes)
+        @title_style = ""
+        @date_style = ""
       end
+      
+      @movies = @movies.with_ratings(@checked_boxes)
     end
   
     def new
@@ -65,4 +86,5 @@ class MoviesController < ApplicationController
     def movie_params
       params.require(:movie).permit(:title, :rating, :description, :release_date)
     end
+    
   end
