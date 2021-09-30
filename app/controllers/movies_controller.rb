@@ -7,6 +7,15 @@ class MoviesController < ApplicationController
     end
   
     def index
+      @all_ratings = Movie.all_ratings
+      
+      if !params.has_key?(:ratings)
+        ratings_hash = @all_ratings.each_with_object({}) {|rating, h| h[rating] = '1'}
+        params[:ratings] = ratings_hash
+        # redirect_to movies_path(:ratings => ratings_hash) and return
+      end
+      
+      @checked_boxes = params[:ratings].keys
       @title_style = ""
       @date_style = ""
       if params[:title_sort]
@@ -16,11 +25,13 @@ class MoviesController < ApplicationController
         @movies = Movie.order(:release_date)
         @date_style = "hilite p-3 mb-2 bg-warning"
       else
-        @movies = Movie.all
+        # @movies = Movie.all
+        @movies = Movie.with_ratings(@checked_boxes)
       end
     end
   
     def new
+      @all_ratings = Movie.all_ratings
       # default: render 'new' template
     end
   
@@ -46,10 +57,6 @@ class MoviesController < ApplicationController
       @movie.destroy
       flash[:notice] = "Movie '#{@movie.title}' deleted."
       redirect_to movies_path
-    end
-    
-    def sort
-      render plain: 'sort'
     end
   
     private
