@@ -1,4 +1,3 @@
 ---
-BUNDLE_BIN: "bin"
-BUNDLE_WITHOUT: "development:test"
-BUNDLE_WITH: "production"
+BUNDLE_WITHOUT: "production"
+BUNDLE_WITH: "development:test:tset"
